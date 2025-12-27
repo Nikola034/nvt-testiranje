@@ -1,0 +1,218 @@
+<p-toast position="top-center"></p-toast>
+
+<div
+  class="flex align-items-center justify-content-center min-h-screen px-3 py-4"
+>
+  <div class="w-full max-w-2xl">
+    <!-- Brand Section -->
+    <div class="text-center mb-4">
+      <i class="pi pi-music-note text-6xl mb-3 block"></i>
+      <h1 class="text-4xl font-bold m-0 mb-2">Join Mixly</h1>
+      <p class="text-lg m-0">Create your account to get started</p>
+    </div>
+
+    <!-- Register Card -->
+    <p-card styleClass="border-none shadow-4">
+      <ng-template pTemplate="content">
+        <form
+          [formGroup]="registerForm"
+          (ngSubmit)="onSubmit()"
+          class="p-fluid"
+        >
+          <!-- Name Fields Row -->
+          <div class="grid">
+            <!-- First Name -->
+            <div class="col-12 md:col-6">
+              <div class="field mb-4">
+                <label for="name" class="block font-semibold mb-2">
+                  <i class="pi pi-user mr-2"></i>Name *
+                </label>
+                <span class="p-input-icon-left w-full">
+                  <input
+                    pInputText
+                    id="name"
+                    formControlName="name"
+                    placeholder="Enter your name"
+                    class="w-full"
+                    [class.p-invalid]="isNameInvalid"
+                    [disabled]="isLoading"
+                  />
+                </span>
+                <small class="p-error block mt-1" *ngIf="isNameInvalid">
+                  {{ firstNameErrorMessage }}
+                </small>
+              </div>
+            </div>
+
+            <!-- Last Name -->
+            <div class="col-12 md:col-6">
+              <div class="field mb-4">
+                <label for="surname" class="block font-semibold mb-2">
+                  <i class="pi pi-user mr-2"></i>Surname *
+                </label>
+                <span class="p-input-icon-left w-full">
+                  <input
+                    pInputText
+                    id="surname"
+                    formControlName="surname"
+                    placeholder="Enter your surname"
+                    class="w-full"
+                    [class.p-invalid]="isSurnameInvalid"
+                    [disabled]="isLoading"
+                  />
+                </span>
+                <small class="p-error block mt-1" *ngIf="isSurnameInvalid">
+                  {{ lastNameErrorMessage }}
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Username Field -->
+          <div class="field mb-4">
+            <label for="phoneNumber" class="block font-semibold mb-2">
+              <i class="pi pi-at mr-2"></i>Phone Number *
+            </label>
+            <span class="p-input-icon-left w-full">
+              <input
+                pInputText
+                id="phoneNumber"
+                formControlName="phoneNumber"
+                placeholder="Enter your phone number"
+                class="w-full"
+                [class.p-invalid]="isOrganizationInvalid"
+                [disabled]="isLoading"
+              />
+            </span>
+            <small class="p-error block mt-1" *ngIf="isOrganizationInvalid">
+              {{ organizationErrorMessage }}
+            </small>
+            <small class="text-color-secondary text-sm mt-1 block">
+              Phone number numbers and plus
+            </small>
+          </div>
+          <!-- Email Field -->
+          <div class="field mb-4">
+            <label for="email" class="block font-semibold mb-2">
+              <i class="pi pi-envelope mr-2"></i>Email Address *
+            </label>
+            <span class="p-input-icon-left w-full">
+              <input
+                pInputText
+                id="username"
+                formControlName="username"
+                type="username"
+                placeholder="Enter your email address"
+                class="w-full"
+                [class.p-invalid]="isUsernameInvalid"
+                [disabled]="isLoading"
+              />
+            </span>
+            <small class="p-error block mt-1" *ngIf="isUsernameInvalid">
+              {{ emailErrorMessage }}
+            </small>
+          </div>
+
+          <!-- Password Fields Row -->
+          <div class="grid">
+            <!-- Password -->
+            <div class="col-12 md:col-6">
+              <div class="field mb-4">
+                <label for="password" class="block font-semibold mb-2">
+                  <i class="pi pi-lock mr-2"></i>Password *
+                </label>
+                <p-password
+                  formControlName="password"
+                  inputId="password"
+                  placeholder="Enter your password"
+                  styleClass="w-full"
+                  inputStyleClass="w-full"
+                  (input)="onPasswordInput($event)"
+                  [class.p-invalid]="isPasswordInvalid"
+                  [disabled]="isLoading"
+                  [feedback]="true"
+                  [toggleMask]="true"
+                ></p-password>
+
+                <!-- ovde ide error/strength prikaz -->
+                <div class="h-5 mt-1">
+                  <small *ngIf="isPasswordInvalid" class="p-error block">
+                    {{ passwordErrorMessage }}
+                  </small>
+                  <small
+                    *ngIf="passwordStrength === 'weak'"
+                    class="p-error block"
+                  >
+                    ⚠️ Weak
+                  </small>
+                  <small
+                    *ngIf="passwordStrength === 'medium'"
+                    class="text-yellow-500 block"
+                  >
+                    ℹ️ Medium
+                  </small>
+                  <small
+                    *ngIf="passwordStrength === 'strong'"
+                    class="text-green-600 block"
+                  >
+                    ✅ Strong
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="col-12 md:col-6">
+              <div class="field mb-4">
+                <label for="confirmPassword" class="block font-semibold mb-2">
+                  <i class="pi pi-lock mr-2"></i>Confirm Password *
+                </label>
+                <p-password
+                  formControlName="confirmPassword"
+                  inputId="confirmPassword"
+                  placeholder="Confirm your password"
+                  styleClass="w-full"
+                  inputStyleClass="w-full"
+                  [class.p-invalid]="isConfirmPasswordInvalid"
+                  [disabled]="isLoading"
+                  [feedback]="false"
+                  [toggleMask]="true"
+                ></p-password>
+                <small
+                  class="p-error block mt-1"
+                  *ngIf="isConfirmPasswordInvalid"
+                >
+                  {{ confirmPasswordErrorMessage }}
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Register Button -->
+          <p-button
+            type="submit"
+            label="Create Account"
+            icon="pi pi-user-plus"
+            styleClass="w-full mb-4"
+            [loading]="isLoading"
+            [disabled]="passwordStrength === 'weak' || isLoading || registerForm.invalid"
+          ></p-button>
+
+          <!-- Login Link -->
+          <div class="text-center pt-3">
+            <span class="text-color-secondary mr-2"
+              >Already have an account?</span
+            >
+            <p-button
+              link
+              label="Sign In"
+              styleClass="p-0"
+              (onClick)="navigateToLogin()"
+              [loading]="isLoading"
+            ></p-button>
+          </div>
+        </form>
+      </ng-template>
+    </p-card>
+  </div>
+</div>
