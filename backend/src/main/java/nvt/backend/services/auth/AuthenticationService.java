@@ -56,7 +56,7 @@ public class AuthenticationService {
         user.setSurname(request.getSurname());
         user.setRole(Role.C);
         user.setAuthorities("CUSTOMER");
-
+        user.setPhoneNumber(request.getPhoneNumber());
 
         long activationTokenExpire = 24 * 60 * 60 * 1000;
         String activationToken = jwtService.generateActivationToken(user, activationTokenExpire);
@@ -73,14 +73,14 @@ public class AuthenticationService {
 
         saveUserToken(accessToken, refreshToken, user);
 
-        return new RegisterResponseDTO(user.getId(), "User Created Successfully", user.getUsername(), user.getName(), user.getSurname(),request.getOrganization(), accessToken, refreshToken);
+        return new RegisterResponseDTO(user.getId(), "User Created Successfully", user.getUsername(), user.getName(), user.getSurname(),request.getPhoneNumber(), accessToken, refreshToken);
 
     }
 
     private void sendActivationEmail(String email, String token) {
         String activationLink = "http://localhost:8080/api/v1/auth/activate?token=" + token;
         emailService.sendMail(
-                "system@securely.com",
+                "system@tetakly.com",
                 email,
                 "Activate Your Account",
                 "Click the link to activate your account: \n\n" + "<a href='" + activationLink + "'> Activate" + "</a>" +

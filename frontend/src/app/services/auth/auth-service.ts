@@ -83,6 +83,17 @@ export class AuthService {
       );
   }
 
+  test(): Observable<String> {
+    return this.http
+      .get<String>(`${environment.apiUrl}auth/test`)
+      .pipe(
+        catchError((error) => {
+          console.error('Caooo:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   /**
    * Handle successful login response
    */
@@ -148,9 +159,9 @@ export class AuthService {
    */
   isTokenValid(token: string): boolean {
     try {
-      // const decoded = this.decodeToken(token);
-      // const currentTime = Math.floor(Date.now() / 1000);
-      // return decoded.exp > currentTime;
+      const decoded = this.decodeToken(token);
+      const currentTime = Math.floor(Date.now() / 1000);
+      return decoded.exp > currentTime;
       return true;
     } catch (error) {
       return false;

@@ -89,6 +89,24 @@ export class Login implements OnInit, OnDestroy {
     this.router.navigate(['/register']);
   }
 
+  test(): void{
+     this.authService.test()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('aaaa')
+          console.log(response)
+        },
+        error: (error) => {
+          this.handleLoginError(error);
+          
+        },
+        complete: () => {
+          
+        }
+      });
+  }
+
   private performLogin(): void {
     this.isLoading = true;
     this.messageService.clear();

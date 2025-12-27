@@ -31,10 +31,6 @@ public class User {
     private String name;
     private String surname;
     private String phoneNumber;
-
-    @Embedded
-    private Address address;
-
     private String username;
     private String password;
     private String photo;
@@ -44,12 +40,4 @@ public class User {
     private boolean active = false;
     private String activationToken;
     private Date tokenExpiration;
-
-
-    @ManyToMany
-    @JoinTable(name = "user_blocked_users",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "blocked_user_id"))
-    private List<User> blockedUsers;
-
 }

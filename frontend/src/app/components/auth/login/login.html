@@ -1,5 +1,4 @@
 <p-toast position="top-center"></p-toast>
-
 <div class="flex align-items-center justify-content-center min-h-screen px-3"
     >
 
@@ -55,6 +54,8 @@
                         <div class="text-center pt-3" >
                             <span class="text-color-secondary mr-2 flex w-full justify-content-center">Don't have an account?</span>
                             <p-button label="Create Account" link class="p-0 flex w-full justify-content-center" (onClick)="navigateToRegister()"
+                                [disabled]="isLoading"></p-button>
+                                <p-button label="Create Account" link class="p-0 flex w-full justify-content-center" (onClick)="test()"
                                 [disabled]="isLoading"></p-button>
                         </div>
 

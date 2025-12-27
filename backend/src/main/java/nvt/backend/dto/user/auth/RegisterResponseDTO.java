@@ -11,17 +11,17 @@ public class RegisterResponseDTO {
     private String username;
     private String name;
     private String surname;
-    private String organization;
+    private String phoneNumber;
     private String accessToken;
     private String refreshToken;
 
-    public RegisterResponseDTO(int id, String message, String username, String name, String surname, String organization, String accessToken, String refreshToken) {
+    public RegisterResponseDTO(int id, String message, String username, String name, String surname, String phoneNumber, String accessToken, String refreshToken) {
         this.id = id;
         this.message = message;
         this.username = username;
         this.name = name;
         this.surname = surname;
-        this.organization = organization;
+        this.phoneNumber = phoneNumber;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
