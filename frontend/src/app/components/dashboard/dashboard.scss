@@ -1,0 +1,11 @@
+/* Dashboard layout - using PrimeNG and PrimeFlex */
+
+.sidebar {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar .mt-auto {
+  margin-top: auto;
+}

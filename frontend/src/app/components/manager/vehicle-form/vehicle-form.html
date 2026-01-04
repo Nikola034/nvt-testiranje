@@ -1,0 +1,177 @@
+<p-toast></p-toast>
+
+<div class="flex justify-content-center p-4">
+  <div class="w-full" style="max-width: 800px;">
+    <p-button 
+      label="Back to Vehicles" 
+      icon="pi pi-arrow-left" 
+      [outlined]="true"
+      (onClick)="goBack()"
+      class="mb-3">
+    </p-button>
+
+    <div class="flex justify-content-center p-4" *ngIf="loading">
+      <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+    </div>
+
+    <p-card [header]="isEditMode ? 'Edit Vehicle' : 'Add New Vehicle'" *ngIf="!loading">
+      <form [formGroup]="vehicleForm" (ngSubmit)="onSubmit()">
+
+        <div class="flex flex-column gap-2 mb-4">
+          <label for="licensePlate" class="font-semibold">License Plate *</label>
+          <input 
+            pInputText 
+            id="licensePlate" 
+            formControlName="licensePlate" 
+            placeholder="e.g. NS-123-AB"
+            class="w-full" />
+          @if (vehicleForm.get('licensePlate')?.invalid && vehicleForm.get('licensePlate')?.touched) {
+            <small class="text-red-500">License plate is required (min. 2 characters)</small>
+          }
+        </div>
+
+        <div class="flex flex-column gap-2 mb-4">
+          <label for="weightLimit" class="font-semibold">Weight Limit (kg) *</label>
+          <p-inputNumber 
+            id="weightLimit" 
+            formControlName="weightLimit" 
+            placeholder="e.g. 1500"
+            [min]="1"
+            mode="decimal"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="2"
+            class="w-full"
+            styleClass="w-full">
+          </p-inputNumber>
+          @if (vehicleForm.get('weightLimit')?.invalid && vehicleForm.get('weightLimit')?.touched) {
+            <small class="text-red-500">Weight limit is required and must be greater than 0</small>
+          }
+        </div>
+
+        <p-divider></p-divider>
+
+        <div class="grid mb-4">
+          <div class="col-12 md:col-6">
+            <div class="flex flex-column gap-2">
+              <label for="brand" class="font-semibold">Brand *</label>
+              <p-select
+                id="brand"
+                [options]="brands"
+                formControlName="brand"
+                optionLabel="name"
+                placeholder="Select a brand"
+                (onChange)="onBrandChange($event)"
+                class="w-full"
+                styleClass="w-full">
+              </p-select>
+              @if (vehicleForm.get('brand')?.invalid && vehicleForm.get('brand')?.touched) {
+                <small class="text-red-500">Brand is required</small>
+              }
+            </div>
+          </div>
+          
+          <div class="col-12 md:col-6">
+            <div class="flex flex-column gap-2">
+              <label for="model" class="font-semibold">Model *</label>
+              <p-select
+                id="model"
+                [options]="models"
+                formControlName="model"
+                optionLabel="name"
+                placeholder="Select a model"
+                [disabled]="!selectedBrand"
+                class="w-full"
+                styleClass="w-full">
+              </p-select>
+              @if (vehicleForm.get('model')?.invalid && vehicleForm.get('model')?.touched) {
+                <small class="text-red-500">Model is required</small>
+              }
+            </div>
+          </div>
+        </div>
+
+        <p-divider></p-divider>
+
+        <div class="mb-4" *ngIf="isEditMode && existingImages.length > 0">
+          <label class="font-semibold block mb-2">Current Images</label>
+          <div class="grid">
+            <div class="col-6 md:col-4 lg:col-3" *ngFor="let image of existingImages">
+              <div class="relative" [class.opacity-50]="isMarkedForDeletion(image.id)">
+                <img [src]="image.url" [alt]="image.originalName" 
+                     class="w-full border-round" style="height: 100px; object-fit: cover;">
+                <div class="mt-2 flex gap-1">
+                  <p-button 
+                    *ngIf="!isMarkedForDeletion(image.id)"
+                    icon="pi pi-trash" 
+                    severity="danger"
+                    [text]="true"
+                    size="small"
+                    (onClick)="markImageForDeletion(image.id)">
+                  </p-button>
+                  <p-button 
+                    *ngIf="isMarkedForDeletion(image.id)"
+                    icon="pi pi-undo" 
+                    severity="success"
+                    [text]="true"
+                    size="small"
+                    (onClick)="restoreImage(image.id)">
+                  </p-button>
+                </div>
+                <small class="text-500 block mt-1 white-space-nowrap overflow-hidden text-overflow-ellipsis">
+                  {{ image.originalName }}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="font-semibold block mb-2">{{ isEditMode ? 'Add New Images' : 'Vehicle Images *' }}</label>
+          <p-fileUpload 
+            mode="basic"
+            name="images"
+            accept="image/*"
+            [multiple]="true"
+            [auto]="false"
+            chooseLabel="Choose Images"
+            (onSelect)="onImageSelect($event)"
+            [customUpload]="true">
+          </p-fileUpload>
+
+          <div class="grid mt-3" *ngIf="newImages.length > 0">
+            <div class="col-6 md:col-4 lg:col-3" *ngFor="let file of newImages; let i = index">
+              <div class="flex align-items-center gap-2 p-2 surface-100 border-round">
+                <i class="pi pi-image"></i>
+                <span class="flex-1 text-overflow-ellipsis overflow-hidden white-space-nowrap">{{ file.name }}</span>
+                <p-button 
+                  icon="pi pi-times" 
+                  [rounded]="true" 
+                  [text]="true"
+                  size="small"
+                  severity="danger"
+                  (onClick)="removeNewImage(i)">
+                </p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p-divider></p-divider>
+
+        <div class="flex gap-2 justify-content-end">
+          <p-button 
+            label="Cancel" 
+            [outlined]="true"
+            (onClick)="goBack()">
+          </p-button>
+          <p-button 
+            [label]="isEditMode ? 'Update Vehicle' : 'Create Vehicle'" 
+            type="submit"
+            [loading]="submitting"
+            [disabled]="vehicleForm.invalid || submitting">
+          </p-button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>

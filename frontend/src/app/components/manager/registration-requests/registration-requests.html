@@ -1,0 +1,75 @@
+<div class="flex justify-content-center p-4">
+  <p-card class="w-full" [style]="{'max-width': '1200px'}">
+    <ng-template pTemplate="header">
+      <div class="flex justify-content-between align-items-center p-3">
+        <h2 class="m-0">Company Registration Requests</h2>
+        <p-button 
+          [label]="showAll ? 'Show Pending Only' : 'Show All Requests'" 
+          [outlined]="true"
+          (onClick)="toggleFilter()">
+        </p-button>
+      </div>
+    </ng-template>
+
+    <div class="flex justify-content-center p-4" *ngIf="loading">
+      <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+    </div>
+    
+    <p-message severity="error" class="w-full mb-3" *ngIf="error">{{ error }}</p-message>
+
+    <p-message severity="info" class="w-full" *ngIf="!loading && !error && requests.length === 0">
+      No registration requests found.
+    </p-message>
+
+    <p-table [value]="requests" [tableStyle]="{'min-width': '60rem'}" *ngIf="!loading && requests.length > 0"
+             styleClass="p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Company Name</th>
+          <th>Owner</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-request>
+        <tr>
+          <td>{{ request.id }}</td>
+          <td>{{ request.companyName }}</td>
+          <td>
+            <div>{{ request.ownerName }}</div>
+            <small class="text-500">{{ request.ownerEmail }}</small>
+          </td>
+          <td>{{ request.cityName }}, {{ request.countryName }}</td>
+          <td>
+            <p-tag [value]="request.status" [severity]="getStatusSeverity(request.status)"></p-tag>
+          </td>
+          <td>{{ formatDate(request.createdAt) }}</td>
+          <td>
+            <p-button 
+              label="View Details" 
+              [link]="true"
+              [routerLink]="['/app/manager/requests', request.id]">
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center p-4">No requests found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <p-paginator 
+      *ngIf="!loading && totalRecords > 0"
+      [rows]="pageSize" 
+      [totalRecords]="totalRecords"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [first]="currentPage * pageSize"
+      (onPageChange)="onPageChange($event)">
+    </p-paginator>
+  </p-card>
+</div>

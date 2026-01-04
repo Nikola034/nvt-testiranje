@@ -13,7 +13,9 @@ import java.util.List;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE) // All subclasses stored in one table
 @DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
-@Table(name = "\"user\"")
+@Table(name = "\"user\"", indexes = {
+    @Index(name = "idx_user_username", columnList = "username")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

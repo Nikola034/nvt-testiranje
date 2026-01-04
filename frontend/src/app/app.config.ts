@@ -17,9 +17,11 @@ export const appConfig: ApplicationConfig = {
     , { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     providePrimeNG({
       theme: {
-        preset: Aura
-      },
-
+        preset: Aura,
+        options: {
+          darkModeSelector: '.dark-mode'
+        }
+      }
     })
   ]
 };

@@ -1,0 +1,264 @@
+<p-toast></p-toast>
+
+<div class="flex justify-content-center p-4">
+  <div class="w-full" style="max-width: 1200px;">
+    <div class="flex justify-content-between align-items-center mb-3">
+      <p-button 
+        label="Back to Vehicles" 
+        icon="pi pi-arrow-left" 
+        [outlined]="true"
+        (onClick)="goBack()">
+      </p-button>
+      <p-button 
+        *ngIf="vehicle"
+        label="Edit Vehicle" 
+        icon="pi pi-pencil"
+        (onClick)="editVehicle()">
+      </p-button>
+    </div>
+
+    <div class="flex justify-content-center p-4" *ngIf="loading">
+      <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+    </div>
+
+    <div class="grid" *ngIf="vehicle && !loading">
+      <div class="col-12 lg:col-6">
+        <p-card header="Vehicle Information">
+          <div class="grid">
+            <div class="col-6">
+              <div class="flex flex-column gap-1 mb-3">
+                <label class="text-500 text-sm">License Plate</label>
+                <span class="font-semibold text-xl">{{ vehicle.licensePlate }}</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="flex flex-column gap-1 mb-3">
+                <label class="text-500 text-sm">Weight Limit</label>
+                <span class="font-medium">{{ vehicle.weightLimit }} kg</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="flex flex-column gap-1 mb-3">
+                <label class="text-500 text-sm">Brand</label>
+                <span class="font-medium">{{ vehicle.brandName }}</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="flex flex-column gap-1 mb-3">
+                <label class="text-500 text-sm">Model</label>
+                <span class="font-medium">{{ vehicle.modelName }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p-divider *ngIf="imageUrls.length > 0"></p-divider>
+          
+          <div *ngIf="imageUrls.length > 0">
+            <label class="text-500 text-sm block mb-2">Images</label>
+            <div class="flex gap-2 flex-wrap">
+              <a *ngFor="let img of imageUrls" [href]="img.url" target="_blank">
+                <img [src]="img.url" [alt]="img.originalName" 
+                     class="border-round" style="height: 80px; width: 80px; object-fit: cover;">
+              </a>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <div class="col-12 lg:col-6">
+        <p-card header="Current Location">
+          <div class="flex justify-content-center p-3" *ngIf="locationLoading">
+            <p-progressSpinner strokeWidth="4" [style]="{width: '30px', height: '30px'}"></p-progressSpinner>
+          </div>
+
+          <p-message severity="info" class="w-full" *ngIf="!locationLoading && locationError">
+            {{ locationError }}
+          </p-message>
+
+          <div *ngIf="location && !locationLoading">
+            <div class="flex align-items-center gap-2 mb-3">
+              <p-tag [value]="location.online ? 'Online' : 'Offline'" 
+                     [severity]="location.online ? 'success' : 'danger'"></p-tag>
+              <p-tag *ngIf="location.currentState" 
+                     [value]="location.currentState" 
+                     severity="info"></p-tag>
+            </div>
+
+            <div class="grid mb-3">
+              <div class="col-6">
+                <div class="flex flex-column gap-1">
+                  <label class="text-500 text-sm">Last Heartbeat</label>
+                  <span class="font-medium text-sm">{{ formatDateTime(location.lastHeartbeat) }}</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="flex flex-column gap-1">
+                  <label class="text-500 text-sm">Total Distance</label>
+                  <span class="font-medium">{{ location.totalDistance.toFixed(2) }} km</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div #mapContainer class="map-container border-round"></div>
+        </p-card>
+      </div>
+
+      <div class="col-12">
+        <p-card header="Distance Statistics">
+          <div class="flex gap-3 align-items-end flex-wrap mb-4">
+            <div class="flex flex-column gap-2">
+              <label class="font-semibold">Time Period</label>
+              <p-select 
+                [options]="periodOptions" 
+                [(ngModel)]="selectedPeriod"
+                optionLabel="label"
+                (onChange)="onPeriodChange()"
+                styleClass="w-12rem">
+              </p-select>
+            </div>
+
+            <div class="flex gap-2 align-items-end" *ngIf="selectedPeriod.value === 'custom'">
+              <div class="flex flex-column gap-2">
+                <label class="font-semibold">Start Date</label>
+                <p-datepicker 
+                  [(ngModel)]="customStartDate" 
+                  [maxDate]="maxDate"
+                  dateFormat="yy-mm-dd"
+                  placeholder="Start date">
+                </p-datepicker>
+              </div>
+              <div class="flex flex-column gap-2">
+                <label class="font-semibold">End Date</label>
+                <p-datepicker 
+                  [(ngModel)]="customEndDate" 
+                  [maxDate]="maxDate"
+                  dateFormat="yy-mm-dd"
+                  placeholder="End date">
+                </p-datepicker>
+              </div>
+              <p-button 
+                label="Apply" 
+                icon="pi pi-check"
+                (onClick)="applyCustomRange()">
+              </p-button>
+            </div>
+          </div>
+
+          <div class="flex justify-content-center p-4" *ngIf="statsLoading">
+            <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+          </div>
+
+          <div *ngIf="statistics && !statsLoading">
+            <div class="flex gap-4 mb-4">
+              <div class="flex flex-column">
+                <label class="text-500 text-sm">Total Distance</label>
+                <span class="font-semibold text-2xl text-primary">{{ statistics.totalDistance.toFixed(2) }} km</span>
+              </div>
+              <div class="flex flex-column">
+                <label class="text-500 text-sm">Aggregation</label>
+                <span class="font-medium capitalize">{{ statistics.aggregationType }}</span>
+              </div>
+            </div>
+
+            <div class="chart-container" *ngIf="chartData">
+              <p-chart type="bar" [data]="chartData" [options]="chartOptions" height="300px"></p-chart>
+            </div>
+
+            <p-message severity="info" class="w-full mt-3" *ngIf="statistics.dataPoints.length === 0">
+              No distance data available for the selected period.
+            </p-message>
+          </div>
+        </p-card>
+      </div>
+
+      <div class="col-12">
+        <p-card header="Availability Statistics">
+          <div class="flex gap-3 align-items-end flex-wrap mb-4">
+            <div class="flex flex-column gap-2">
+              <label class="font-semibold">Time Period</label>
+              <p-select 
+                [options]="availabilityPeriodOptions" 
+                [(ngModel)]="selectedAvailabilityPeriod"
+                optionLabel="label"
+                (onChange)="onAvailabilityPeriodChange()"
+                styleClass="w-14rem">
+              </p-select>
+            </div>
+
+            <div class="flex gap-2 align-items-end" *ngIf="selectedAvailabilityPeriod.value === 'custom'">
+              <div class="flex flex-column gap-2">
+                <label class="font-semibold">Start Date</label>
+                <p-datepicker 
+                  [(ngModel)]="availabilityCustomStart" 
+                  [maxDate]="maxDate"
+                  [showTime]="true"
+                  dateFormat="yy-mm-dd"
+                  placeholder="Start date">
+                </p-datepicker>
+              </div>
+              <div class="flex flex-column gap-2">
+                <label class="font-semibold">End Date</label>
+                <p-datepicker 
+                  [(ngModel)]="availabilityCustomEnd" 
+                  [maxDate]="maxDate"
+                  [showTime]="true"
+                  dateFormat="yy-mm-dd"
+                  placeholder="End date">
+                </p-datepicker>
+              </div>
+              <p-button 
+                label="Apply" 
+                icon="pi pi-check"
+                (onClick)="applyAvailabilityCustomRange()">
+              </p-button>
+            </div>
+
+            <p-tag *ngIf="isRealTimeMode" value="Real-time" severity="success" class="ml-auto"></p-tag>
+          </div>
+
+          <div class="flex justify-content-center p-4" *ngIf="availabilityLoading">
+            <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+          </div>
+
+          <div *ngIf="availability && !availabilityLoading">
+            <div class="grid mb-4">
+              <div class="col-6 md:col-3">
+                <div class="flex flex-column">
+                  <label class="text-500 text-sm">Total Online</label>
+                  <span class="font-semibold text-xl text-green-500">{{ availability.onlinePercentage }}%</span>
+                </div>
+              </div>
+              <div class="col-6 md:col-3">
+                <div class="flex flex-column">
+                  <label class="text-500 text-sm">Total Offline</label>
+                  <span class="font-semibold text-xl text-red-500">{{ availability.offlinePercentage }}%</span>
+                </div>
+              </div>
+              <div class="col-6 md:col-3">
+                <div class="flex flex-column">
+                  <label class="text-500 text-sm">Online Time</label>
+                  <span class="font-medium">{{ formatDuration(availability.totalOnlineSeconds) }}</span>
+                </div>
+              </div>
+              <div class="col-6 md:col-3">
+                <div class="flex flex-column">
+                  <label class="text-500 text-sm">Offline Time</label>
+                  <span class="font-medium">{{ formatDuration(availability.totalOfflineSeconds) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-container" *ngIf="availabilityChartData">
+              <p-chart type="bar" [data]="availabilityChartData" [options]="availabilityChartOptions" height="300px"></p-chart>
+            </div>
+
+            <p-message severity="info" class="w-full mt-3" *ngIf="availability.dataPoints.length === 0">
+              No availability data available for the selected period.
+            </p-message>
+          </div>
+        </p-card>
+      </div>
+    </div>
+  </div>
+</div>

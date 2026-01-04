@@ -5,7 +5,11 @@ import jakarta.persistence.*;
 import nvt.backend.model.user.User;
 
 @Entity
-@Table(name = "token")
+@Table(name = "token", indexes = {
+    @Index(name = "idx_token_access_token", columnList = "access_token"),
+    @Index(name = "idx_token_refresh_token", columnList = "refresh_token"),
+    @Index(name = "idx_token_user_id", columnList = "user_id")
+})
 public class Token {
 
     @Id

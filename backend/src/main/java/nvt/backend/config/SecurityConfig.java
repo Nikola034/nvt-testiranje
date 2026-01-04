@@ -4,6 +4,7 @@ import nvt.backend.filter.JwtAuthenticationFilter;
 import nvt.backend.services.auth.UserDetailsServiceImp;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -21,16 +22,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true) // Enable method-level security
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     private final UserDetailsServiceImp userDetailsServiceImp;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomLogoutHandler logoutHandler;
 
     public SecurityConfig(UserDetailsServiceImp userDetailsServiceImp,
-                          JwtAuthenticationFilter jwtAuthenticationFilter) {
+                          JwtAuthenticationFilter jwtAuthenticationFilter,
+                          CustomLogoutHandler logoutHandler) {
         this.userDetailsServiceImp = userDetailsServiceImp;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.logoutHandler = logoutHandler;
     }
 
     @Bean
@@ -43,22 +47,38 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/login", "/api/v1/auth/refresh_token",
                                 "/api/v1/auth/register", "/api/v1/auth/activate")
                         .permitAll()
-                        // Admin only endpoints
-                        .requestMatchers("/api/v1/admin/**")
-                        .hasAuthority("ADMIN")
 
-                        // CA and Admin endpoints for certificate management
-                        .requestMatchers("/api/v1/certificates/issue",
-                                "/api/v1/certificates/templates")
-                        .hasAnyAuthority("ADMIN", "CA")
+                        // WebSocket endpoint
+                        .requestMatchers("/ws/**")
+                        .permitAll()
 
-                        .requestMatchers("/api/v1/certificates/csr")
-                        .hasAnyAuthority("ADMIN", "CA","COMMON")
+                        .requestMatchers("/api/v1/registration-requests/pending",
+                                "/api/v1/registration-requests/pending/paged",
+                                "/api/v1/registration-requests/pending/count",
+                                "/api/v1/registration-requests/all",
+                                "/api/v1/registration-requests/all/paged")
+                        .hasAnyAuthority("MANAGER", "ADMIN")
 
-                        .requestMatchers("/api/v1/admin/**")
-                        .hasAuthority("ADMIN")
+                        .requestMatchers("/api/v1/vehicles",
+                                "/api/v1/vehicles/paged",
+                                "/api/v1/vehicles/search",
+                                "/api/v1/vehicles/search/paged",
+                                "/api/v1/vehicles/brands",
+                                "/api/v1/vehicles/brands/*/models")
+                        .hasAnyAuthority("MANAGER", "ADMIN")
 
-                        // All other requests need authentication
+                        .requestMatchers(HttpMethod.GET, "/api/v1/vehicles/{id}")
+                        .hasAnyAuthority("MANAGER", "ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/registration-requests/*/process")
+                        .hasAnyAuthority("MANAGER", "ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/registration-requests/{id}")
+                        .hasAnyAuthority("MANAGER", "ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/registration-requests")
+                        .hasAnyAuthority("CUSTOMER", "MANAGER", "ADMIN")
+
                         .anyRequest()
                         .authenticated()
                 )
@@ -71,6 +91,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout
                         .logoutUrl("/api/v1/auth/logout")
+                        .addLogoutHandler(logoutHandler)
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setStatus(HttpStatus.OK.value());
                         })

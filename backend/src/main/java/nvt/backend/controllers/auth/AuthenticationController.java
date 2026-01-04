@@ -44,12 +44,8 @@ public class  AuthenticationController {
     }
 
     @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        try {
-            return ResponseEntity.ok("cao");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<ResponseEntity<String>> test() {
+        return ResponseEntity.ok(new ResponseEntity<String>("cao", HttpStatus.OK));
     }
 
     @PostMapping("/refresh_token")

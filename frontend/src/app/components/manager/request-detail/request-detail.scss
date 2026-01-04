@@ -1,0 +1,10 @@
+/* Minimal custom styles - using PrimeNG components and PrimeFlex utilities */
+
+/* Image hover effect */
+.grid a img {
+  transition: opacity 0.2s;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+}

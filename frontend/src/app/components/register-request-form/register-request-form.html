@@ -1,0 +1,216 @@
+<p-toast></p-toast>
+
+<div class="flex justify-content-center p-4">
+  <p-card header="Company Registration Request" class="w-full" [style]="{'max-width': '900px'}">
+    <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Company Name -->
+      <div class="flex flex-column gap-2 mb-4">
+        <label for="name" class="font-semibold">Company Name *</label>
+        <input 
+          pInputText 
+          id="name" 
+          formControlName="name" 
+          placeholder="Enter company name"
+          class="w-full" />
+        @if (registrationForm.get('name')?.invalid && registrationForm.get('name')?.touched) {
+          <small class="text-red-500">Company name is required (min. 2 characters)</small>
+        }
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Country and City Selection -->
+      <div class="grid mb-4">
+        <div class="col-12 md:col-6">
+          <div class="flex flex-column gap-2">
+            <label for="country" class="font-semibold">Country *</label>
+            <p-select
+              id="country"
+              [options]="countries"
+              formControlName="country"
+              optionLabel="name"
+              placeholder="Select a country"
+              (onChange)="onCountryChange($event)"
+              class="w-full"
+              styleClass="w-full">
+            </p-select>
+          </div>
+        </div>
+        
+        <div class="col-12 md:col-6">
+          <div class="flex flex-column gap-2">
+            <label for="city" class="font-semibold">City *</label>
+            <p-select
+              id="city"
+              [options]="cities"
+              formControlName="city"
+              optionLabel="name"
+              placeholder="Select a city"
+              [disabled]="!selectedCountry"
+              (onChange)="onCityChange($event)"
+              class="w-full"
+              styleClass="w-full">
+            </p-select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Street Address -->
+      <div class="grid mb-4">
+        <div class="col-12 md:col-8">
+          <div class="flex flex-column gap-2">
+            <label for="street" class="font-semibold">Street *</label>
+            <input 
+              pInputText 
+              id="street" 
+              formControlName="street" 
+              placeholder="Enter street name"
+              class="w-full" />
+          </div>
+        </div>
+        <div class="col-12 md:col-4">
+          <div class="flex flex-column gap-2">
+            <label for="streetNumber" class="font-semibold">Street Number *</label>
+            <input 
+              pInputText 
+              id="streetNumber" 
+              formControlName="streetNumber" 
+              placeholder="e.g. 123"
+              class="w-full" />
+          </div>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Map Section -->
+      <div class="mb-4">
+        <label class="font-semibold block mb-2">Location on Map *</label>
+        <p class="text-500 text-sm mb-3">Click on the map to mark the company location or use the search.</p>
+        
+        @if (locationSelected) {
+          <p-message severity="success" class="mb-3 w-full">
+            Location selected: {{ selectedStreet || 'Lat: ' + selectedLatitude + ', Lng: ' + selectedLongitude }}
+          </p-message>
+        } @else {
+          <p-message severity="warn" class="mb-3 w-full">
+            Location not selected. Click on the map to select a location.
+          </p-message>
+        }
+        
+        <div class="border-1 border-round surface-border overflow-hidden" style="height: 400px;">
+          <app-map 
+            [showSearch]="true" 
+            (addressSelected)="onAddressSelected($event)">
+          </app-map>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Company Images Upload -->
+      <div class="mb-4">
+        <label class="font-semibold block mb-2">Company Images *</label>
+        <p class="text-500 text-sm mb-3">Add one or more images of your company (JPG, PNG, GIF).</p>
+        
+        <p-fileUpload
+          name="companyImages"
+          [multiple]="true"
+          accept="image/*"
+          [maxFileSize]="5000000"
+          [auto]="false"
+          [customUpload]="true"
+          (onSelect)="onImageSelect($event)"
+          (onRemove)="onImageRemove($event)"
+          (onClear)="onImageClear()"
+          chooseLabel="Select Images"
+          chooseIcon="pi pi-images"
+          class="w-full">
+          <ng-template #empty>
+            <div class="flex align-items-center justify-content-center flex-column p-4">
+              <i class="pi pi-image text-4xl text-400 mb-3"></i>
+              <span class="text-500">Drag and drop images here</span>
+            </div>
+          </ng-template>
+          <ng-template #content>
+            <div class="flex flex-wrap gap-2 p-2">
+              @for (image of companyImages; track image.name) {
+                <div class="flex align-items-center gap-2 p-2 border-1 border-round surface-border">
+                  <i class="pi pi-image"></i>
+                  <span>{{ image.name }}</span>
+                  <span class="text-500 text-sm">({{ (image.size / 1024).toFixed(1) }} KB)</span>
+                </div>
+              }
+            </div>
+          </ng-template>
+        </p-fileUpload>
+        
+        @if (companyImages.length === 0) {
+          <small class="text-orange-500">At least one company image is required</small>
+        }
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Proof Documents Upload -->
+      <div class="mb-4">
+        <label class="font-semibold block mb-2">Documentation *</label>
+        <p class="text-500 text-sm mb-3">
+          Add documents proving your right to register the company 
+          (proof of ownership, registry extract, etc.) - Images or PDF documents.
+        </p>
+        
+        <p-fileUpload
+          name="proofDocuments"
+          [multiple]="true"
+          accept="image/*,.pdf"
+          [maxFileSize]="10000000"
+          [auto]="false"
+          [customUpload]="true"
+          (onSelect)="onDocumentSelect($event)"
+          (onRemove)="onDocumentRemove($event)"
+          (onClear)="onDocumentClear()"
+          chooseLabel="Select Documents"
+          chooseIcon="pi pi-file"
+          class="w-full">
+          <ng-template #empty>
+            <div class="flex align-items-center justify-content-center flex-column p-4">
+              <i class="pi pi-file-pdf text-4xl text-400 mb-3"></i>
+              <span class="text-500">Drag and drop documents here</span>
+            </div>
+          </ng-template>
+          <ng-template #content>
+            <div class="flex flex-wrap gap-2 p-2">
+              @for (doc of proofDocuments; track doc.name) {
+                <div class="flex align-items-center gap-2 p-2 border-1 border-round surface-border">
+                  <i [class]="doc.type.includes('pdf') ? 'pi pi-file-pdf' : 'pi pi-image'"></i>
+                  <span>{{ doc.name }}</span>
+                  <span class="text-500 text-sm">({{ (doc.size / 1024).toFixed(1) }} KB)</span>
+                </div>
+              }
+            </div>
+          </ng-template>
+        </p-fileUpload>
+        
+        @if (proofDocuments.length === 0) {
+          <small class="text-orange-500">At least one document is required</small>
+        }
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Submit Button -->
+      <div class="flex justify-content-end gap-2">
+        <p-button 
+          type="submit" 
+          label="Submit Request" 
+          icon="pi pi-send"
+          [loading]="isSubmitting"
+          [disabled]="!isFormValid() || isSubmitting">
+        </p-button>
+      </div>
+      
+    </form>
+  </p-card>
+</div>

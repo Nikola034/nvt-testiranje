@@ -28,7 +28,8 @@ export class AuthInterceptor implements HttpInterceptor {
   private readonly excludedUrls = [
     '/auth/login',
     '/auth/register',
-    '/auth/refresh_token'
+    '/auth/refresh_token',
+    'https://api.pwnedpasswords.com/range/'
   ];
 
   constructor(private authService: AuthService) {}
@@ -69,20 +70,28 @@ export class AuthInterceptor implements HttpInterceptor {
   private addAuthHeader(request: HttpRequest<any>): HttpRequest<any> {
     const accessToken = this.authService.getAccessToken();
     
+    // Don't set Content-Type for FormData - let the browser set it with the boundary
+    const isFormData = request.body instanceof FormData;
+    
     if (accessToken && this.authService.isAuthenticated()) {
+      const headers: { [key: string]: string } = {
+        Authorization: `Bearer ${accessToken}`
+      };
+      if (!isFormData) {
+        headers['Content-Type'] = 'application/json';
+      }
+      return request.clone({ setHeaders: headers });
+    }
+    
+    if (!isFormData) {
       return request.clone({
         setHeaders: {
-          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
         }
       });
     }
     
-    return request.clone({
-      setHeaders: {
-        'Content-Type': 'application/json'
-      }
-    });
+    return request;
   }
 
   /**
@@ -104,7 +113,7 @@ export class AuthInterceptor implements HttpInterceptor {
           console.log('✅ Got new tokens:', tokens);
           
           // 🔥 SAČUVAJ TOKENS TRAJNO OVDE!
-          localStorage.setItem("tetak_app_tokens", JSON.stringify(tokens));
+          localStorage.setItem("secure_app_tokens", JSON.stringify(tokens));
           console.log('✅ Tokens permanently saved to localStorage');
           
           this.isRefreshing = false;

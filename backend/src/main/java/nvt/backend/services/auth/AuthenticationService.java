@@ -217,7 +217,6 @@ public class AuthenticationService {
                     .body(new AuthenticationResponse(null, null, "Token refresh failed"));
         }
     }
-
 }
 
 

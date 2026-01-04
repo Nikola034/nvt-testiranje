@@ -1,0 +1,13 @@
+Method,Name,Error,Occurrences
+GET,GET /vehicles/{id},RemoteDisconnected('Remote end closed connection without response'),124
+GET,GET /vehicles/paged,RemoteDisconnected('Remote end closed connection without response'),53
+GET,GET /vehicles/search/paged,RemoteDisconnected('Remote end closed connection without response'),81
+POST,POST /vehicles,HTTPError('400 Client Error:  for url: POST /vehicles'),36
+GET,GET /registration-requests/all/paged,RemoteDisconnected('Remote end closed connection without response'),36
+GET,GET /vehicles/brands,RemoteDisconnected('Remote end closed connection without response'),35
+GET,GET /vehicles/{id}/availability/stats,CatchResponseError('Unexpected status: 0'),55
+GET,GET /registration-requests/pending/paged,RemoteDisconnected('Remote end closed connection without response'),65
+GET,GET /registration-requests/{id},RemoteDisconnected('Remote end closed connection without response'),56
+GET,GET /vehicles/{id}/distance/stats,CatchResponseError('Unexpected status: 0'),53
+GET,GET /vehicles/{id}/location,CatchResponseError('Unexpected status: 0'),95
+POST,POST /vehicles,RemoteDisconnected('Remote end closed connection without response'),62

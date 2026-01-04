@@ -1,0 +1,21 @@
+<div class="flex min-h-screen">
+  <aside class="sidebar surface-ground border-right-1 surface-border">
+    <div class="p-3 border-bottom-1 surface-border">
+      <h3 class="m-0 text-primary font-semibold">Smartly</h3>
+    </div>
+    <p-menu [model]="menuItems" styleClass="w-full border-none"></p-menu>
+    <div class="p-3 mt-auto border-top-1 surface-border">
+      <p-button 
+        label="Logout" 
+        icon="pi pi-sign-out" 
+        severity="danger" 
+        class="w-full"
+        styleClass="w-full"
+        (onClick)="logout()">
+      </p-button>
+    </div>
+  </aside>
+  <main class="flex-1 surface-ground">
+    <router-outlet></router-outlet>
+  </main>
+</div>

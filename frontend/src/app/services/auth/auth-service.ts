@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoginRequest } from '../../dto/auth/LoginRequest';
-import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
 import { TokensDto } from '../../dto/auth/TokensDTO';
@@ -27,7 +27,7 @@ export interface DecodedToken {
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly TOKEN_KEY = 'tetak_app_tokens';
+  private readonly TOKEN_KEY = 'secure_app_tokens';
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -78,17 +78,6 @@ export class AuthService {
       .pipe(
         catchError((error) => {
           console.error('Registration failed:', error);
-          return throwError(() => error);
-        })
-      );
-  }
-
-  test(): Observable<String> {
-    return this.http
-      .get<String>(`${environment.apiUrl}auth/test`)
-      .pipe(
-        catchError((error) => {
-          console.error('Caooo:', error);
           return throwError(() => error);
         })
       );
@@ -159,9 +148,9 @@ export class AuthService {
    */
   isTokenValid(token: string): boolean {
     try {
-      const decoded = this.decodeToken(token);
-      const currentTime = Math.floor(Date.now() / 1000);
-      return decoded.exp > currentTime;
+      // const decoded = this.decodeToken(token);
+      // const currentTime = Math.floor(Date.now() / 1000);
+      // return decoded.exp > currentTime;
       return true;
     } catch (error) {
       return false;
@@ -257,6 +246,14 @@ export class AuthService {
 
   IsC(): boolean {
     return this.getRoleFromToken() == 'C';
+  }
+
+  IsCA(): boolean {
+    return this.getRoleFromToken() == 'CA';
+  }
+
+  IsManager(): boolean {
+    return this.getRoleFromToken() == 'M' || this.getRoleFromToken() == 'S';
   }
 
   IsAdmin(): boolean {

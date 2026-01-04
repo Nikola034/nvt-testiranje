@@ -1,0 +1,215 @@
+<p-toast></p-toast>
+
+<div class="flex justify-content-center p-4">
+  <div class="w-full" style="max-width: 1000px;">
+    <p-button 
+      label="Back to List" 
+      icon="pi pi-arrow-left" 
+      [outlined]="true"
+      (onClick)="goBack()"
+      class="mb-3">
+    </p-button>
+
+    <div class="flex justify-content-center p-4" *ngIf="loading">
+      <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+    </div>
+    
+    <p-message severity="error" class="w-full mb-3" *ngIf="error">{{ error }}</p-message>
+    <p-message severity="success" class="w-full mb-3" *ngIf="successMessage">{{ successMessage }}</p-message>
+
+    <p-card *ngIf="request && !loading">
+      <ng-template pTemplate="header">
+        <div class="flex justify-content-between align-items-center p-3">
+          <h2 class="m-0">{{ request.companyName }}</h2>
+          <p-tag [value]="request.status" [severity]="getStatusSeverity(request.status)"></p-tag>
+        </div>
+      </ng-template>
+
+      <!-- Company Information -->
+      <div class="mb-4">
+        <h3 class="text-500 mt-0 mb-3">Company Information</h3>
+        <div class="grid">
+          <div class="col-12 md:col-6 lg:col-4">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">Company Name</label>
+              <span class="font-medium">{{ request.companyName }}</span>
+            </div>
+          </div>
+          <div class="col-12 md:col-6 lg:col-4">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">Country</label>
+              <span class="font-medium">{{ request.countryName }}</span>
+            </div>
+          </div>
+          <div class="col-12 md:col-6 lg:col-4">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">City</label>
+              <span class="font-medium">{{ request.cityName }}</span>
+            </div>
+          </div>
+          <div class="col-12 md:col-6 lg:col-4">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">Street</label>
+              <span class="font-medium">{{ request.street }}</span>
+            </div>
+          </div>
+          <div class="col-12 md:col-6 lg:col-4">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">Street Number</label>
+              <span class="font-medium">{{ request.streetNumber }}</span>
+            </div>
+          </div>
+          <div class="col-12 md:col-6 lg:col-4">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">Coordinates</label>
+              <span class="font-medium">{{ request.latitude }}, {{ request.longitude }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Owner Information -->
+      <div class="mb-4">
+        <h3 class="text-500 mt-0 mb-3">Owner Information</h3>
+        <div class="grid">
+          <div class="col-12 md:col-6">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">Name</label>
+              <span class="font-medium">{{ request.ownerName }}</span>
+            </div>
+          </div>
+          <div class="col-12 md:col-6">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">Email</label>
+              <span class="font-medium">{{ request.ownerEmail }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Request Details -->
+      <div class="mb-4">
+        <h3 class="text-500 mt-0 mb-3">Request Details</h3>
+        <div class="grid">
+          <div class="col-12 md:col-6">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">Submitted</label>
+              <span class="font-medium">{{ formatDate(request.createdAt) }}</span>
+            </div>
+          </div>
+          <div class="col-12 md:col-6" *ngIf="request.processedAt">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">Processed</label>
+              <span class="font-medium">{{ formatDate(request.processedAt) }}</span>
+            </div>
+          </div>
+          <div class="col-12" *ngIf="request.rejectionReason">
+            <div class="flex flex-column gap-1 mb-3">
+              <label class="text-500 text-sm">Rejection Reason</label>
+              <span class="font-medium text-red-400 font-italic">{{ request.rejectionReason }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Images -->
+      <div class="mb-4">
+        <h3 class="text-500 mt-0 mb-3">Images ({{ request.images.length }})</h3>
+        <div class="flex justify-content-center" *ngIf="filesLoading">
+          <p-progressSpinner strokeWidth="4" [style]="{width: '30px', height: '30px'}"></p-progressSpinner>
+        </div>
+        <div class="grid" *ngIf="!filesLoading && imageUrls.length > 0">
+          <div class="col-6 md:col-4 lg:col-3" *ngFor="let image of imageUrls">
+            <a [href]="image.url" target="_blank" class="block">
+              <img [src]="image.url" [alt]="image.originalName" 
+                   class="w-full border-round" style="height: 120px; object-fit: cover;">
+            </a>
+            <small class="text-500 block mt-1 white-space-nowrap overflow-hidden text-overflow-ellipsis">
+              {{ image.originalName }}
+            </small>
+          </div>
+        </div>
+        <p class="text-500 font-italic" *ngIf="!filesLoading && imageUrls.length === 0">No images uploaded</p>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Documents -->
+      <div class="mb-4">
+        <h3 class="text-500 mt-0 mb-3">Documents ({{ request.documents.length }})</h3>
+        <div class="flex justify-content-center" *ngIf="filesLoading">
+          <p-progressSpinner strokeWidth="4" [style]="{width: '30px', height: '30px'}"></p-progressSpinner>
+        </div>
+        <div class="flex flex-column gap-2" *ngIf="!filesLoading && documentUrls.length > 0">
+          <a *ngFor="let doc of documentUrls" 
+             [href]="doc.url" 
+             target="_blank"
+             class="p-button p-button-outlined p-button-sm text-left">
+            <i class="pi pi-file mr-2"></i>
+            {{ doc.originalName }}
+          </a>
+        </div>
+        <p class="text-500 font-italic" *ngIf="!filesLoading && documentUrls.length === 0">No documents uploaded</p>
+      </div>
+
+      <!-- Actions -->
+      <ng-template pTemplate="footer">
+        <div class="flex gap-2" *ngIf="request.status === 'PENDING'">
+          <p-button 
+            label="Approve Request" 
+            icon="pi pi-check"
+            severity="success"
+            (onClick)="approveRequest()" 
+            [disabled]="processing"
+            [loading]="processing">
+          </p-button>
+          <p-button 
+            label="Reject Request" 
+            icon="pi pi-times"
+            severity="danger"
+            (onClick)="openRejectModal()" 
+            [disabled]="processing">
+          </p-button>
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<p-dialog 
+  header="Reject Registration Request" 
+  [(visible)]="showRejectModal" 
+  [modal]="true"
+  [style]="{width: '500px'}"
+  [closable]="true">
+  <p class="text-500 mb-3">Please provide a reason for rejecting this request:</p>
+  <textarea 
+    pTextarea 
+    [(ngModel)]="rejectionReason" 
+    placeholder="Enter rejection reason..."
+    rows="4"
+    class="w-full">
+  </textarea>
+  <ng-template pTemplate="footer">
+    <p-button 
+      label="Cancel" 
+      [outlined]="true"
+      (onClick)="closeRejectModal()">
+    </p-button>
+    <p-button 
+      label="Confirm Rejection" 
+      severity="danger"
+      (onClick)="confirmReject()" 
+      [disabled]="processing || !rejectionReason.trim()"
+      [loading]="processing">
+    </p-button>
+  </ng-template>
+</p-dialog>
+

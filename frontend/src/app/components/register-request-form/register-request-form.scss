@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+// Override map height within the form container
+app-map {
+  display: block;
+  height: 100%;
+  
+  ::ng-deep {
+    .map-container {
+      height: 100% !important;
+      margin: 0 !important;
+    }
+    
+    #map {
+      height: 100% !important;
+      min-height: 400px;
+    }
+  }
+}
+
+// File upload styling
+::ng-deep {
+  .p-fileupload {
+    .p-fileupload-content {
+      min-height: 100px;
+    }
+  }
+}
